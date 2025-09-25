@@ -68,7 +68,7 @@ type DummyRMS struct{}
 
 var _ fsm.RMS = &DummyRMS{}
 
-func (d *DummyRMS) HandleEvent(state *fsm.State, event fsm.EventType, args fsm.ArgsType) {
+func (d *DummyRMS) HandleEvent(state *fsm.State, event fsm.EventType, args fsm.ArgsType, trans fsm.Transition) {
 	// Handle the event
 }
 

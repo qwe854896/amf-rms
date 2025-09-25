@@ -1,4 +1,4 @@
-package rsm
+package rsm_test
 
 import (
 	"bytes"
@@ -16,6 +16,7 @@ import (
 	amf_context "github.com/free5gc/amf/internal/context"
 	"github.com/free5gc/amf/internal/gmm"
 	amf_logger "github.com/free5gc/amf/internal/logger"
+	rsm "github.com/free5gc/amf/internal/rms"
 	"github.com/free5gc/amf/pkg/factory"
 	amf_service "github.com/free5gc/amf/pkg/service"
 	"github.com/free5gc/openapi/models"
@@ -52,9 +53,9 @@ func TestMain(m *testing.M) {
 			NgapPort:   38412,
 			Sbi: &factory.Sbi{
 				Scheme:       "http",
-				RegisterIPv4: "127.0.0.1",
-				BindingIPv4:  "127.0.0.1",
-				Port:         8000,
+				RegisterIPv4: "127.0.0.15",
+				BindingIPv4:  "127.0.0.15",
+				Port:         18080,
 				Tls:          &factory.Tls{Pem: "cert/amf.pem", Key: "cert/amf.key"},
 			},
 			// Include namf-rmm so the router mounts the routes under /namf-rmm/v1
@@ -157,7 +158,8 @@ func httpDoJSON(t *testing.T, method, url string, in any) (int, []byte) {
 	if in != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	resp, err := http.DefaultClient.Do(req)
+	newClient := &http.Client{}
+	resp, err := newClient.Do(req)
 	if err != nil {
 		t.Fatalf("http do: %v", err)
 	}
@@ -207,38 +209,41 @@ func TestRMM_CRUD_Subscriptions(t *testing.T) {
 
 // Notification test: when UE FSM state changes, AMF should notify the consumer.
 func TestRMM_Notification_OnGmmTransition(t *testing.T) {
-	gock.EnableNetworking()
+	gock.InterceptClient(http.DefaultClient)
+	defer gock.RestoreClient(http.DefaultClient)
 	defer gock.Off()
 
 	// Prepare a subscription for the UE
-	subID := "sub-ntf-01"
 	ueID := "imsi-208930000000777"
 	notifyBase := "http://127.0.0.1:9099"
 	notifyPath := "/callback/rmm"
 
+	// Create subscription via SBI
+	reqSub := Subscription{UeId: ueID, NotifyUri: notifyBase + notifyPath}
+	status, data := httpDoJSON(t, http.MethodPost, fmt.Sprintf("%s/subscriptions/%s", baseAPIURL, ""), reqSub)
+	if status != http.StatusCreated {
+		t.Fatalf("POST subscription want 201, got %d body=%s", status, string(data))
+	}
+	var subs Subscription
+	_ = json.Unmarshal(data, &subs)
+	subID := subs.SubId
 	// Expect a POST to the callback URI with a payload including subId and ueId
 	gock.New(notifyBase).
 		Post(notifyPath).
 		MatchType("json").
-		JSON(&UeRMNotif{SubId: subID, UeId: ueID}).
+		JSON(&UeRMNotif{SubId: subID, UeId: ueID, PrevState: "Deregistered", CurrState: "Authentication"}).
 		Reply(204)
 
-	// Create subscription via SBI
-	reqSub := Subscription{UeId: ueID, NotifyUri: notifyBase + notifyPath}
-	status, data := httpDoJSON(t, http.MethodPost, fmt.Sprintf("%s/subscriptions/%s", baseAPIURL, subID), reqSub)
-	if status != http.StatusCreated {
-		t.Fatalf("POST subscription want 201, got %d body=%s", status, string(data))
-	}
-
 	// Attach our RMS (student implementation should use it to send notification)
-	gmm.AttachRSM(NewRMS())
+	gmm.AttachRSM(rsm.NewRMS())
 
 	// Create a UE context and trigger a GMM transition
 	ue := amf_context.GetSelf().NewAmfUe(ueID)
 	anType := models.AccessType__3_GPP_ACCESS
+	ue.State[anType] = fsm.NewState("Deregistered")
 
 	// Trigger from Deregistered -> Authentication (StartAuthEvent)
-	if err := gmm.GmmFSM.SendEvent(ue.State[anType], gmm.StartAuthEvent, fsm.ArgsType{gmm.ArgAmfUe: ue}, amf_logger.GmmLog); err != nil {
+	if err := gmm.GmmFSM.SendEvent(ue.State[anType], gmm.StartAuthEvent, fsm.ArgsType{gmm.ArgAmfUe: ue, gmm.ArgAccessType: anType}, amf_logger.GmmLog); err != nil {
 		t.Fatalf("SendEvent StartAuthEvent failed: %v", err)
 	}
 

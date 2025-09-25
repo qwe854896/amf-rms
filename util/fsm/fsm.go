@@ -60,7 +60,7 @@ type FSM struct {
 }
 
 type RMS interface {
-	HandleEvent(*State, EventType, ArgsType)
+	HandleEvent(*State, EventType, ArgsType, Transition)
 }
 
 // NewFSM create a new FSM object then registers transitions and callbacks to it
@@ -148,7 +148,7 @@ func (fsm *FSM) SendEvent(state *State, event EventType, args ArgsType, log *log
 			fsm.callbacks[trans.To](state, EntryEvent, args)
 		}
 
-		fsm.rms.HandleEvent(state, event, args)
+		fsm.rms.HandleEvent(state, event, args, trans)
 		return nil
 	} else {
 		return errors.Errorf("Unknown transition[From: %s, Event: %s]", state.Current(), event)
