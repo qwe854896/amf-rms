@@ -1,4 +1,4 @@
-package rsm
+package rms
 
 import "github.com/free5gc/util/fsm"
 

@@ -1,5 +1,5 @@
 // DO NOT EDIT
-package rsm_test
+package rms_test
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 	amf_context "github.com/free5gc/amf/internal/context"
 	"github.com/free5gc/amf/internal/gmm"
 	amf_logger "github.com/free5gc/amf/internal/logger"
-	rsm "github.com/free5gc/amf/internal/rms"
+	rms "github.com/free5gc/amf/internal/rms"
 	"github.com/free5gc/amf/pkg/factory"
 	amf_service "github.com/free5gc/amf/pkg/service"
 	"github.com/free5gc/openapi/models"
@@ -236,7 +236,7 @@ func TestRMM_Notification_OnGmmTransition(t *testing.T) {
 		Reply(204)
 
 	// Attach our RMS (student implementation should use it to send notification)
-	gmm.AttachRSM(rsm.NewRMS())
+	gmm.AttachRMS(rms.NewRMS())
 
 	// Create a UE context and trigger a GMM transition
 	ue := amf_context.GetSelf().NewAmfUe(ueID)

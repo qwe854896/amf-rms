@@ -80,6 +80,6 @@ func init() {
 	}
 }
 
-func AttachRSM(rms fsm.RMS) {
-	GmmFSM.WithRSM(rms)
+func AttachRMS(rms fsm.RMS) {
+	GmmFSM.WithRMS(rms)
 }

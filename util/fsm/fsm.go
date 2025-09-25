@@ -107,7 +107,7 @@ func NewFSM(
 	return fsm, nil
 }
 
-func (fsm *FSM) WithRSM(rms RMS) {
+func (fsm *FSM) WithRMS(rms RMS) {
 	fsm.rms = rms
 }
 
