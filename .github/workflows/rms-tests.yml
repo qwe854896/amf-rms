@@ -1,0 +1,46 @@
+name: RMS Tests
+
+on:
+  push:
+    branches: [ main, ans ]
+    paths:
+      - 'amf/**'
+      - 'util/**'
+      - '.github/workflows/rms-tests.yml'
+  pull_request:
+    paths:
+      - 'amf/**'
+      - 'util/**'
+      - '.github/workflows/rms-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: amf
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          # Use version from go.mod to avoid hardcoding
+          go-version-file: amf/go.mod
+          cache: true
+          cache-dependency-path: |
+            amf/go.sum
+            util/go.sum
+
+      - name: Show Go env
+        run: go env
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run RMS tests only
+        run: go test -timeout 30s -v -count=1 ./internal/rms/...
