@@ -12,6 +12,6 @@ func NewRMS(
 	return &CustomizedRMS{}
 }
 
-func (rms *CustomizedRMS) HandleEvent(state *fsm.State, event fsm.EventType, args fsm.ArgsType) {
+func (rms *CustomizedRMS) HandleEvent(state *fsm.State, event fsm.EventType, args fsm.ArgsType, trans fsm.Transition) {
 	// implement your customized RMS logic here
 }
