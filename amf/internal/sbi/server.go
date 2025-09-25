@@ -75,6 +75,14 @@ func newRouter(s *Server) *gin.Engine {
 
 	for _, serverName := range factory.AmfConfig.Configuration.ServiceNameList {
 		switch models.ServiceName(serverName) {
+		case "namf-rmm":
+			amfRMMGroup := router.Group(factory.AmfRmmResUriPrefix)
+			amfRMMRoutes := s.getRMSRoutes()
+			routerAuthorizationCheck := util_oauth.NewRouterAuthorizationCheck("namf-rmm")
+			amfRMMGroup.Use(func(c *gin.Context) {
+				routerAuthorizationCheck.Check(c, amf_context.GetSelf())
+			})
+			applyRoutes(amfRMMGroup, amfRMMRoutes)
 		case models.ServiceName_NAMF_COMM:
 			amfCommunicationGroup := router.Group(factory.AmfCommResUriPrefix)
 			amfCommunicationRoutes := s.getCommunicationRoutes()

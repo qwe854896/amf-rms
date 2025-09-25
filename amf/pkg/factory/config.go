@@ -38,6 +38,7 @@ const (
 	ngapDefaultPort            = 38412
 	AmfCallbackResUriPrefix    = "/namf-callback/v1"
 	AmfCommResUriPrefix        = "/namf-comm/v1"
+	AmfRmmResUriPrefix         = "/namf-rmm/v1"
 	AmfEvtsResUriPrefix        = "/namf-evts/v1"
 	AmfLocResUriPrefix         = "/namf-loc/v1"
 	AmfMtResUriPrefix          = "/namf-mt/v1"
