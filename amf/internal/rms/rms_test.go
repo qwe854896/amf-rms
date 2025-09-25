@@ -1,3 +1,4 @@
+// DO NOT EDIT
 package rsm_test
 
 import (
