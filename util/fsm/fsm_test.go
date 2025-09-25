@@ -42,7 +42,7 @@ type DummyRMS struct{}
 
 var _ RMS = &DummyRMS{}
 
-func (d *DummyRMS) HandleEvent(state *State, event EventType, args ArgsType) {
+func (d *DummyRMS) HandleEvent(state *State, event EventType, args ArgsType, trans Transition) {
 	// Handle the event
 }
 
