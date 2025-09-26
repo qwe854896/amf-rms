@@ -1,4 +1,3 @@
-// DO NOT EDIT
 package rms_test
 
 import (
@@ -177,7 +176,7 @@ func TestRMM_CRUD_Subscriptions(t *testing.T) {
 	ueID := "imsi-208930000000001"
 	notify := "http://127.0.0.1:9099/rmm-notify"
 	reqSub := Subscription{UeId: ueID, NotifyUri: notify}
-	status, data := httpDoJSON(t, http.MethodPost, fmt.Sprintf("%s/subscriptions/%s", baseAPIURL, subID), reqSub)
+	status, data := httpDoJSON(t, http.MethodPost, fmt.Sprintf("%s/subscriptions/", baseAPIURL), reqSub)
 	if status != http.StatusCreated {
 		t.Fatalf("POST want 201, got %d body=%s", status, string(data))
 	}
@@ -193,6 +192,7 @@ func TestRMM_CRUD_Subscriptions(t *testing.T) {
 		Subscriptions []Subscription `json:"subscriptions"`
 	}
 	_ = json.Unmarshal(data, &list)
+	subID = list.Subscriptions[0].SubId
 
 	// Update via PUT
 	updated := Subscription{UeId: ueID, NotifyUri: notify + "/v2"}
