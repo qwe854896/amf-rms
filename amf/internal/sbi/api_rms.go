@@ -59,9 +59,27 @@ func (s *Server) getRMSRoutes() []Route {
 	}
 }
 
+func getRMSStore() *rms.SubscriptionStore {
+	storeI := amf_context.GetSelf().SubscriptionStore
+
+	store, ok := storeI.(*rms.SubscriptionStore)
+
+	if !ok || store == nil {
+		amf_logger.SBILog.Errorf("RMS Subscription Store is nil or wrong type in Context")
+		return nil
+	}
+	return store
+}
+
 // GET /subscriptions
 func (s *Server) HandleGetSubscriptions(c *gin.Context) {
-	subsList := amf_context.GetSelf().SubscriptionStore.GetAllSubscriptions()
+	store := getRMSStore()
+	if store == nil {
+		handleRMSNotFound(c, fmt.Errorf("RMS Subscription Store is not available"))
+		return
+	}
+
+	subsList := store.GetAllSubscriptions()
 
 	resp := struct {
 		Subscriptions []rms.Subscription `json:"subscriptions"`
@@ -84,7 +102,13 @@ func (s *Server) HandlePostSubscriptions(c *gin.Context) {
 		return
 	}
 
-	sub, err := amf_context.GetSelf().SubscriptionStore.CreateSubscription(req.UeId, req.NotifyUri)
+	store := getRMSStore()
+	if store == nil {
+		handleRMSNotFound(c, fmt.Errorf("RMS Subscription Store is not available"))
+		return
+	}
+
+	sub, err := store.CreateSubscription(req.UeId, req.NotifyUri)
 	if err != nil {
 		handleRMSNotFound(c, err)
 		return
@@ -107,9 +131,15 @@ func (s *Server) HandlePutSubscription(c *gin.Context) {
 		return
 	}
 
+	store := getRMSStore()
+	if store == nil {
+		handleRMSNotFound(c, fmt.Errorf("RMS Subscription Store is not available"))
+		return
+	}
+
 	sub := rms.Subscription{UeId: req.UeId, NotifyUri: req.NotifyUri}
 
-	isNew, err := amf_context.GetSelf().SubscriptionStore.UpsertSubscription(subID, sub)
+	isNew, err := store.UpsertSubscription(subID, sub)
 	if err != nil {
 		handleRMSNotFound(c, err)
 		return
@@ -125,8 +155,13 @@ func (s *Server) HandlePutSubscription(c *gin.Context) {
 // DELETE /subscriptions/{subscriptionID}
 func (s *Server) HandleDeleteSubscription(c *gin.Context) {
 	subID := c.Param("subscriptionID")
+	store := getRMSStore()
+	if store == nil {
+		handleRMSNotFound(c, fmt.Errorf("RMS Subscription Store is not available"))
+		return
+	}
 
-	err := amf_context.GetSelf().SubscriptionStore.DeleteSubscription(subID)
+	err := store.DeleteSubscription(subID)
 	if err != nil {
 		handleRMSNotFound(c, err)
 		return
