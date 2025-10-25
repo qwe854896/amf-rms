@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/free5gc/amf/internal/logger"
+	"github.com/free5gc/amf/internal/rms"
 	"github.com/free5gc/amf/pkg/factory"
 	"github.com/free5gc/nas/nasConvert"
 	"github.com/free5gc/nas/security"
@@ -83,6 +84,7 @@ type AMFContext struct {
 	T3512Value                   int    // unit is second
 	Non3gppDeregTimerValue       int    // unit is second
 	TimeZone                     string // "[+-]HH:MM[+][1-2]", Refer to TS 29.571 - 5.2.2 Simple Data Types
+	SubscriptionStore            *rms.SubscriptionStore
 	// read-only fields
 	T3513Cfg factory.TimerValue
 	T3522Cfg factory.TimerValue

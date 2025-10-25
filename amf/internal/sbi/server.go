@@ -14,6 +14,7 @@ import (
 
 	amf_context "github.com/free5gc/amf/internal/context"
 	"github.com/free5gc/amf/internal/logger"
+	"github.com/free5gc/amf/internal/rms"
 	"github.com/free5gc/amf/internal/sbi/consumer"
 	"github.com/free5gc/amf/internal/sbi/processor"
 	util_oauth "github.com/free5gc/amf/internal/util"
@@ -49,6 +50,8 @@ func NewServer(amf ServerAmf, tlsKeyLogPath string) (*Server, error) {
 	s := &Server{
 		ServerAmf: amf,
 	}
+
+	amf_context.GetSelf().SubscriptionStore = rms.NewSubscriptionStore()
 
 	s.router = newRouter(s)
 
