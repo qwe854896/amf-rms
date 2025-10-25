@@ -41,7 +41,7 @@ func (s *Server) getRMSRoutes() []Route {
 		{
 			Name:    "subscriptions_collection_post",
 			Method:  http.MethodPost,
-			Pattern: "/subscriptions",
+			Pattern: "/subscriptions/",
 			APIFunc: s.HandlePostSubscriptions,
 		},
 		{
