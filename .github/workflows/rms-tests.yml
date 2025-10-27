@@ -12,6 +12,7 @@ on:
       - 'amf/**'
       - 'util/**'
       - '.github/workflows/rms-tests.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
